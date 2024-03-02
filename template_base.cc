@@ -13,6 +13,8 @@ using vvvvvc = vector<vvvvc<T>>;
   vector<vector<vector<type>>> name( \
       h, vector<vector<type>>(w, vector<type>(__VA_ARGS__)))
 
+using pqg = priority_queue<T, vector<T>, greater<T>>;
+
 
 // vvv of size n * m * k
 vvv(bool, die, n, m, k);	
