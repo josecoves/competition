@@ -11,6 +11,13 @@ struct TreeNode {
     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
     TreeNode(int x, TreeNode *_left, TreeNode *_right) : val(x), left(_left), right(_right) {}
 };
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode() : val(0), next(nullptr) {}
+    ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode *_next) : val(x), next(_next) {}
+};
 
 typedef tuple<vector<string>, int, int, int> display_data;
 display_data rec(TreeNode* node) {
@@ -110,15 +117,34 @@ TreeNode* readTree() {
     return vec_to_tree(v);
 }
 
+
+
 istream& operator>> (istream& in, string &s) {
     char c; in >> c; assert(c == '\"'); s = ""; in >> c;
     while(c != '\"') { s+=c; in >> c; }
     return in;
 }
-template<typename T> istream& operator>> (istream& in, vector<T>& v) {
+template<class T> istream& operator>> (istream& in, vector<T>& v) {
     char c; in >> c; assert(c == '[');
     while(c != ']') {T val; in >> val >> c; v.push_back(val); }
     return in;
+}
+
+ListNode* readList() {
+    vector<int> v; cin >> v;
+    ListNode* head = new ListNode();
+    auto cur = head;
+    for(auto val: v){
+        cur->next = new ListNode(val);
+        cur = cur->next;
+    }
+    return head->next;
+}
+
+void display(ListNode* head){
+    vector<int> list_nodes;
+    for(auto x = head; x; x = x->next) list_nodes.push_back(x->val);
+    trace(list_nodes);
 }
 
 
@@ -133,42 +159,42 @@ template<typename T> istream& operator>> (istream& in, vector<T>& v) {
 // #define ctime() {cerr << gtime() << " secs" << endl;}
 
 // template<class T, class S> std::ostream& operator<<(std::ostream &os, const std::pair<T, S> &t);
-// template<typename T1, typename T2, typename T3> ostream& operator<< (ostream& out, const tuple<T1,T2,T3>& x);
-// template<typename T> ostream& operator<< (ostream& out, const vector<T>& v);
-// template<typename T> ostream& operator<< (ostream& out, const set<T>& v);
-// template<typename T> ostream& operator<< (ostream& out, const multiset<T>& v);
-// template<typename T, typename VAL> ostream& operator<< (ostream& out, const map<T,VAL>& v);
+// template<class T1, class T2, class T3> ostream& operator<< (ostream& out, const tuple<T1,T2,T3>& x);
+// template<class T> ostream& operator<< (ostream& out, const vector<T>& v);
+// template<class T> ostream& operator<< (ostream& out, const set<T>& v);
+// template<class T> ostream& operator<< (ostream& out, const multiset<T>& v);
+// template<class T, class VAL> ostream& operator<< (ostream& out, const map<T,VAL>& v);
 
 
 // template<class T, class S> std::ostream& operator<<(std::ostream &os, const std::pair<T, S> &t) {
 // os<<"("<<t.first<<", "<<t.second<<")";
 // return os;
 // }
-// template<typename T1, typename T2, typename T3> ostream& operator<< (ostream& out, const tuple<T1,T2,T3>& x) {
+// template<class T1, class T2, class T3> ostream& operator<< (ostream& out, const tuple<T1,T2,T3>& x) {
 //     out << "(" << get<0>(x) << ", " << get<1>(x) << ", " << get<2>(x) << ")"; return out;
 // }
-// template<typename T> ostream& operator<< (ostream& out, const valarray<T>& v) {
+// template<class T> ostream& operator<< (ostream& out, const valarray<T>& v) {
 //     out << "["; size_t last = v.size() - 1; for(size_t i = 0; i < v.size(); ++i) {
 //     out << v[i]; if (i != last) out << ", "; } out << "]"; return out;
 // }
-// template<typename T> ostream& operator<< (ostream& out, const vector<T>& v) {
+// template<class T> ostream& operator<< (ostream& out, const vector<T>& v) {
 //     out << "["; size_t last = v.size() - 1; for(size_t i = 0; i < v.size(); ++i) {
 //     out << v[i]; if (i != last) out << ", "; } out << "]"; return out;
 // }
-// template<typename T> ostream& operator<< (ostream& out, const set<T>& v) {
+// template<class T> ostream& operator<< (ostream& out, const set<T>& v) {
 //     out << "{"; auto last = v.end(); for(auto i = v.begin(); i != last;) {
 //     out << *i; if (++i != last) out << ", "; } out << "}"; return out;
 // }
-// template<typename T> ostream& operator<< (ostream& out, const multiset<T>& v) {
+// template<class T> ostream& operator<< (ostream& out, const multiset<T>& v) {
 //     out << "{"; auto last = v.end(); for(auto i = v.begin(); i != last;) {
 //     out << *i; if (++i != last) out << ", "; } out << "}"; return out;
 // }
-// template<typename T, typename VAL> ostream& operator<< (ostream& out, const map<T,VAL>& v) {
+// template<class T, class VAL> ostream& operator<< (ostream& out, const map<T,VAL>& v) {
 //     out << "{"; auto last = v.end(); for(auto x = v.begin(); x != last;) {
 //     out<<x->first<<":"<<x->second; if (++x != last) out << ", "; } out << "}"; return out;
 // }
 
-// template <typename Arg, typename... Args>
+// template <class Arg, class... Args>
 // void trace(Arg&& arg, Args&&... args)
 // {
 //     cerr<<"< ";

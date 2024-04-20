@@ -1,21 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#define ONLINE_JUDGEx
-#ifndef ONLINE_JUDGE
-    #include "debug_common.h"
-    #else
-    #define debug(x)
-    #define debuga(a, n)
-    #define debug2(x, y)
-    #define debug3(x, y, z)
-    #define debug4(x, y, z, w)
-    #define ctime()
-    int recur_depth = 0; bool rec_indent = true;
-    template <typename Arg, typename... Args>
-    void trace(Arg&& arg, Args&&... args){}
-    #endif
-
+#include "debug_common.h"
     #define pb push_back
     #define eb emplace_back
     #define popb pop_back
@@ -71,16 +57,16 @@ using namespace std;
     template <typename Arg, typename... Args>
     void read(Arg&& arg, Args&&... args)
     {
-        cin >> std::forward<Arg>(arg);
+        cin >> forward<Arg>(arg);
         using expander = int[];
-        (void)expander{0, (void(cin >> std::forward<Args>(args)),0)...};
+        (void)expander{0, (void(cin >> forward<Args>(args)),0)...};
     }
     template <typename Arg, typename... Args>
     void out(Arg&& arg, Args&&... args)
     {
-        cout << std::forward<Arg>(arg);
+        cout << forward<Arg>(arg);
         using expander = int[];
-        (void)expander{0, (void(cout << " " << std::forward<Args>(args)),0)...};
+        (void)expander{0, (void(cout << " " << forward<Args>(args)),0)...};
         cout << endl;
     }
 
@@ -103,7 +89,7 @@ using namespace std;
     // const int dsy[4]={1,0,-1, 0};
 
     /*************************************************************************/
-
+    const int maxn = 1e5;
 
 
 
@@ -168,7 +154,46 @@ struct custom_hash {
     }
 };
 unordered_map<long long, int, custom_hash> safe_map;
-// ordered_set = https://codeforces.com/blog/entry/15729
+namespace ordered { // https://codeforces.com/blog/entry/15729
+    // #include <ext/pb_ds/assoc_container.hpp>
+    // #include <ext/pb_ds/tree_policy.hpp>
+    // using namespace __gnu_pbds;
+
+    // template <typename T>
+    // using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
+    // template <typename T> struct ordered_multiset {
+    //     ordered_set<pair<T, int>> s;
+    //     map<T, int> m;
+    //     void insert(T element) {
+    //         int count = m[element];
+    //         pair<T, int> p = {element,count};
+    //         m[element]++;
+    //         s.insert(p);
+    //     }
+    //     void erase(T element) {
+    //         if (m.find(element) == m.end()) return;
+    //         int count = m[element];
+    //         if (count == 1) m.erase(element);
+    //         else m[element] = count-1;
+    //         pair<T, int> eraseP = {element, count-1};
+    //         s.erase(eraseP);
+    //     }
+    //     int size() {return sz(s);}
+    //     int lte(T element) {return (int) s.order_of_key({element, INT_MAX});} // upper_bound
+    //     int lt(T element) {return (int) s.order_of_key({element, -1});} // lower_bound
+    //     int gte(T element) {return sz(s) - lt(element);}
+    //     int gt(T element) {return sz(s) - lte(element);}
+    //     T atIndex(int index) {return (*s.find_by_order(index)).first;}
+    //     bool exists(T element) {return m.find(element) != m.end();}
+    //     int occurences(T element) {if (m.find(element) == m.end()) {return 0;} return m[element];}
+    //     map<T, int> vals() {return m;}
+    //     set<T> unique_vals() { set<T> ans; for(auto [k, v]: m) ans.insert(k); return ans; }
+    // };
+    // template<class T> ostream& operator<< (ostream& out, const ordered_set<T>& v) {
+    //     out << "{"; auto last = v.end(); for(auto i = v.begin(); i != last;) {
+    //     out << *i; if (++i != last) out << ", "; } out << "}"; return out;
+    // }
+}
 struct Tree {
     int n, logn, loghi=30;
     vvi adj, cnt; // cnt[x][bit] is number of nodes with bit set in path [root->x]
@@ -254,12 +279,14 @@ struct Tree {
 };
 struct Sieve {
     vi isp, primes, fdiv;
+    vvi divisors;
     int n = -1;
-    void init(int _n){
+    void init(int _n=maxn){
         n = _n;
         primes.clear();
         isp.assign(n, 1);
-        fdiv.assign(n, 1);
+        fdiv.assign(n, 0);
+        fdiv[0]=fdiv[1]=1;
         isp[0]=isp[1]=0;
         for(int i=2; i<n; ++i){
             if(!isp[i]) continue;
@@ -267,9 +294,14 @@ struct Sieve {
             primes.push_back(i);
             for(int j=i+i; j<n; j+=i) {
                 isp[j] = 0;
-                fdiv[j] = i;
+                if(fdiv[j]==0)
+                    fdiv[j] = i;
             }
         }
+    }
+    void computeDivs(){
+        divisors.resize(n);
+        fornn(i, 2, n) for(int j=i; j<n; j+=i) divisors[j].pb(i);
     }
 
     vi getFactorList(ll val){ // 12 = [2,2,3]
@@ -306,7 +338,8 @@ struct Sieve {
                 x /= p;
             }
         } else {
-            assert(val <= sqr(n - 1LL));
+            if(!(val <= sqr(n - 1LL))) debug2(val, n);
+            // else assert(val <= sqr(n - 1LL));
             auto x = val;
             for(int p: primes){
                 if(p > x or p*1LL*p > val) break;
@@ -320,10 +353,48 @@ struct Sieve {
         }
         return ans;
     }
+    void f(vpii& divs, vll &ans, int i, ll val){
+        // if(val > hi) return;
+        if(i < 0) {
+            ans.pb(val); return;
+        }
+        ll cur = 1;
+        f(divs, ans, i-1, val);
+        auto [x, c] = divs[i];
+        forn(j, c){
+            cur *= x;
+            f(divs, ans, i-1, val*cur);
+        }
+    }
+
+    vll getAllDivs(ll x, map<int, int> factorMap = {}){ // 12 = [1 2 3 4 6 12]
+        if(factorMap.empty()) factorMap = getFactorMap(x);
+        else {
+            ll cur = 1; for(auto [k, v]: factorMap) forn(i, v) cur *= k;
+            assert(cur == x);
+        }
+        vpii divs; for(auto [k,v]: factorMap) divs.eb(k, v);
+        vll ans; f(divs, ans, sz(factorMap)-1, 1);
+        return ans;
+    }
     ll getNumDivs(map<int, int>& divs){ // 12 = [2:2, 3:1] = 3 * 2
         ll ans = 1;
         for(auto [k, v]: divs) ans *= (v+1);
         return ans;
+    }
+    int getSquareDiv(int x){ // largest d: d*d | x;
+        int val = 1;
+        for(auto p: primes){
+            if(p*p*p > x) break;
+            int t = 0;
+            while(x%p == 0){
+                x /= p;
+                t++;
+                if(t%2 == 0) val *= p;
+            }
+        }
+        int root = sqrt(x); if(x>1 and root*root == x) val *= root;
+        return val;
     }
 } sieve;
 struct TrieNode {
@@ -354,6 +425,45 @@ struct TrieNode {
         forn(i, sz(vcnt)-1) ans.pb((vcnt[i] - vcnt[i+1]));
         return ans;
     }
+};
+struct BTrie{ // bit-trie
+    struct Node {
+        Node* next[2];
+        int id;
+        Node(int _id) {
+            id = _id;
+            mem(next, 0);
+        }
+    };
+    Node* root;
+    int k;
+    BTrie(int _k=30) {
+        k = _k;
+        root = new Node(-1);
+    }
+    void add(int x, int id){
+        auto now = root;
+        forb(i, k+1){
+            int bit = (x >> i) & 1;
+            if(!now->next[bit]) {
+                now->next[bit] = new Node(id);
+            }
+            now = now->next[bit];
+            // debug4(id, x, now->id, now.id);
+        }
+    }
+    int pref(int x){
+        auto now = root;
+        forb(i, k+1){
+            int bit = (x >> i) & 1;
+            if(!now->next[bit]) {
+                return now->id;
+            }
+            now = now->next[bit];
+            // debug3(x, i, now.id);
+        }
+        return now->id;
+    };
 };
 namespace segment_util {
     struct SortedTree {
@@ -455,14 +565,38 @@ namespace segment_util {
             return res;
         }
     };
-    template<typename T>
-    struct Seg {
+    const int opSum=0, opMax=1, opMin=2, opAnd=3, opOr=4, opXor=5;
+    template<typename T> struct Seg {
         vector<T> t;
         int n;
         T neutral;
-        function<T(T,T)> merge;
+        vector<T> neutrals = {
+            0, // sum
+            numeric_limits<T>::min(), // max
+            numeric_limits<T>::max(), // min
+            -1, // and
+            0, // or
+            0 // xor
+        };
+        const int op;
+        T merge(T a, T b) {
+            switch(op) {
+                case 0: return a + b;
+                case 1: return max(a, b);
+                case 2: return min(a, b);
+                case 3: return a & b;
+                case 4: return a | b;
+                case 5: return a ^ b;
+            }
+            assert(0);
+            return T();
+        }
+        int operator [] (int i) {
+            lassert(t[i + n] == query(i, i));
+            return t[i + n];
+        }
         void update(int i, T v) {
-            i += n;
+            i += n; t[i] = v;
             for (t[i] = merge(t[i], v); i >>= 1;) {
                 t[i] = merge(t[i << 1], t[i << 1 | 1]);
             }
@@ -476,15 +610,120 @@ namespace segment_util {
             }
             return merge(ansl, ansr);
         }
-        Seg(vector<T> &a, T _neutral, function<T(T,T)>_merge) : n(sz(a)), neutral(_neutral), merge(_merge) {
+        Seg(int _n, int _op) : n(_n), op(_op) {
+            neutral = neutrals[op];
+            t.assign(n << 1, neutral);
+        }
+        Seg(vector<T> &a, int _op) : n(sz(a)), op(_op) {
+            neutral = neutrals[op];
+            // if(isLocal) forn(i, 10) {T x = T(rng()); assert(x == merge(x, neutral) && x == merge(neutral, x));}
             t.assign(n << 1, neutral);
             forn(i, n) t[i + n] = a[i];
             forb(i, n) t[i] = merge(t[i << 1], t[i << 1 | 1]);
         }
-        Seg(int _n, T _neutral, function<T(T,T)>_merge) : n(_n), neutral(_neutral), merge(_merge) {
-            t.assign(n << 1, neutral);
+        vector<T> vals(){
+            vector<T> ans;
+            forn(i, n) ans.pb(query(i, i));
+            return ans;
+        }
+        int right_most(int l, int r, auto pass){ // max id in [l,r]: func(query(id, r)) = true
+            if(l == n) return n;
+            int lo = l, hi = min(r, n-1);
+            if(!pass(query(lo, lo))) return -1; // entire range is bad
+            if(pass(query(lo, hi))) return hi;
+            while(lo < hi){
+                int mid = (lo + hi + 1) / 2;
+                if(pass(query(l, mid))) lo = mid;
+                else hi = mid-1;
+            }
+            lassert(pass(query(l, hi)));
+            lassert(!pass(query(l, hi+1)));
+            return hi;
+        }
+        int left_most(int l, int r, auto pass){ // min id in [l,r]: func(query(l, id)) = true
+            if(l == n) return n;
+            int lo = l, hi = min(r, n-1);
+            if(pass(query(lo, lo))) return lo;
+            if(!pass(query(lo, hi))) return n; // entire range is bad
+            while(lo < hi){
+                int mid = (lo + hi + 0) / 2;
+                if(pass(query(l, mid))) hi = mid;
+                else lo = mid+1;
+            }
+            lassert(pass(query(l, lo)));
+            lassert(!pass(query(l, lo-1)));
+            return lo;
         }
     };
+    // template<typename T>
+    // struct Seg {
+    //     vector<T> t;
+    //     int n;
+    //     T neutral;
+    //     function<T(T,T)> merge;
+    //     int operator [] (int i) {
+    //         assert(t[i + n] == query(i, i));
+    //         return t[i + n];
+    //     }
+    //     void update(int i, T v) {
+    //         i += n; t[i] = v;
+    //         for (t[i] = merge(t[i], v); i >>= 1;) {
+    //             t[i] = merge(t[i << 1], t[i << 1 | 1]);
+    //         }
+    //     }
+    //     T query(int l, int r) {
+    //         T ansl = neutral;
+    //         T ansr = neutral;
+    //         for (l += n, r += n + 1; l < r; l >>= 1, r >>= 1) {
+    //             if (l & 1) ansl = merge(ansl, t[l++]);
+    //             if (r & 1) ansr = merge(t[--r], ansr);
+    //         }
+    //         return merge(ansl, ansr);
+    //     }
+    //     Seg(vector<T> &a, T _neutral, function<T(T,T)>_merge) : n(sz(a)), neutral(_neutral), merge(_merge) {
+    //         t.assign(n << 1, neutral);
+    //         forn(i, n) t[i + n] = a[i];
+    //         forb(i, n) t[i] = merge(t[i << 1], t[i << 1 | 1]);
+    //     }
+    //     Seg(int _n, T _neutral, function<T(T,T)>_merge) : n(_n), neutral(_neutral), merge(_merge) {
+    //         t.assign(n << 1, neutral);
+    //     }
+    //     vector<T> vals(){
+    //         vector<T> ans;
+    //         forn(i, n) ans.pb(query(i, i));
+    //         return ans;
+    //     }
+    //     int right_most(int l, int r, auto pass){ // max id in [l,r]: func(query(id, r)) = true
+    //         if(l == n) return n;
+    //         int lo = l, hi = min(r, n-1);
+    //         if(!pass(query(lo, lo))) return -1; // entire range is bad
+    //         if(pass(query(lo, hi))) return hi;
+    //         while(lo < hi){
+    //             int mid = (lo + hi + 1) / 2;
+    //             // debug3(lo, mid, hi);
+    //             if(pass(query(l, mid))) lo = mid;
+    //             else hi = mid-1;
+    //         }
+    //         assert(pass(query(l, hi)));
+    //         assert(!pass(query(l, hi+1)));
+    //         return hi;
+    //     }
+    //     int left_most(int l, int r, auto pass){ // min id in [l,r]: func(query(l, id)) = true
+    //         if(l == n) return n;
+    //         int lo = l, hi = min(r, n-1);
+    //         if(pass(query(lo, lo))) return lo;
+    //         if(!pass(query(lo, hi))) return n; // entire range is bad
+    //         while(lo < hi){
+    //             int mid = (lo + hi + 0) / 2;
+    //             // debug3(lo, mid, hi);
+    //             if(pass(query(l, mid))) hi = mid;
+    //             else lo = mid+1;
+    //         }
+    //         assert(pass(query(l, lo)));
+    //         dassert(!pass(query(l, lo-1)), l, r, lo);
+    //         return lo;
+    //     }
+    // };
     template <typename T>
     struct Fenwick {
         int n;
@@ -502,6 +741,7 @@ namespace segment_util {
             }
         }
         T sum(int r) { // i <= r : [0, r]
+            assert(r < n);
             T ans{};
             for (int i = r+1; i > 0; i -= i & -i) {
                 ans += a[i - 1];
@@ -535,46 +775,204 @@ namespace segment_util {
         }
     };
 }
-struct Forest {
-    int n;
-    vi parent;
-    Forest(int _n) {
-        n = _n;
-        parent.assign(n, -1);
-    }
-    int root(int v){
-        return parent[v] < 0 ? v : (parent[v] = root(parent[v]));
-    }
-    void merge(int x,int y){	//	x and y are some tools (vertices)
-        if((x = root(x)) == (y = root(y)))     return;
-        if(parent[y] < parent[x])	// balancing the height of the tree
-            swap(x, y);
-        parent[x] += parent[y];
-        parent[y] = x;
-    }
-};
 struct UnionFind { // OOP style
-    vi parent, size;
+    vi parent, siz;
     UnionFind(int N) {
-        size.assign(N, 1);
+        siz.assign(N, 1);
         parent.assign(N, 0);
         for (int i = 0; i < N; i++) parent[i] = i;
     }
-    int findSet(int i) {
+    int find(int i) {
         if(parent[i] == i) return i;
-        return parent[i] = findSet(parent[i]);
+        return parent[i] = find(parent[i]);
     }
-    bool isSameSet(int i, int j) { return findSet(i) == findSet(j); }
-    void unionSet(int i, int j) {
-        int a = findSet(i);
-        int b = findSet(j);
+    bool same(int i, int j) { return find(i) == find(j); }
+    void merge(int i, int j) {
+        int a = find(i);
+        int b = find(j);
         if (a != b) {
-            if (size[a] > size[b]) swap(a, b);
+            if (siz[a] > siz[b]) swap(a, b);
             parent[a] = b;
-            size[b] += size[a];
+            siz[b] += siz[a];
         }
     }
+    int operator [] (int i) {
+        return find(i);
+    }
+    int size(int x) {
+        return siz[find(x)];
+    }
+    map<int, vi> groups(){ // for debug
+        map<int, vi> groups;
+        forn(i, sz(parent)) groups[find(i)].pb(i);
+        return groups;
+    }
 };
+namespace mod_util {
+    using i64 = long long;
+    template<class T>
+    constexpr T power(T a, i64 b) {
+        T res = 1;
+        for (; b; b /= 2, a *= a) {
+            if (b % 2) {
+                res *= a;
+            }
+        }
+        return res;
+    }
+
+    template<int P>
+    struct MInt {
+        i64 x;
+        constexpr MInt() : x{} {}
+        constexpr MInt(i64 x_input) : x{norm(x_input % getMod())} {}
+
+        static int Mod;
+        constexpr static int getMod() {
+            if (P > 0) {
+                return P;
+            } else {
+                return Mod;
+            }
+        }
+        constexpr static void setMod(int Mod_) {
+            Mod = Mod_;
+        }
+        constexpr i64 norm(i64 val) const {
+            if (val < 0) {
+                val += getMod();
+            }
+            if (val >= getMod()) {
+                val -= getMod();
+            }
+            return val;
+        }
+        constexpr ll val() const {
+            return x;
+        }
+        explicit constexpr operator ll() const {
+            return x;
+        }
+        constexpr MInt operator-() const {
+            MInt res;
+            res.x = norm(getMod() - x);
+            return res;
+        }
+        constexpr MInt inv() const {
+            assert(x != 0);
+            return power(*this, getMod() - 2);
+        }
+        constexpr MInt &operator*=(MInt rhs) & {
+            x = 1LL * x * rhs.x % getMod();
+            return *this;
+        }
+        constexpr MInt &operator+=(MInt rhs) & {
+            x = norm(x + rhs.x);
+            return *this;
+        }
+        constexpr MInt &operator-=(MInt rhs) & {
+            x = norm(x - rhs.x);
+            return *this;
+        }
+        constexpr MInt &operator/=(MInt rhs) & {
+            return *this *= rhs.inv();
+        }
+        friend constexpr MInt operator*(MInt lhs, MInt rhs) {
+            MInt res = lhs;
+            res *= rhs;
+            return res;
+        }
+        friend constexpr MInt operator+(MInt lhs, MInt rhs) {
+            MInt res = lhs;
+            res += rhs;
+            return res;
+        }
+        friend constexpr MInt operator-(MInt lhs, MInt rhs) {
+            MInt res = lhs;
+            res -= rhs;
+            return res;
+        }
+        friend constexpr MInt operator/(MInt lhs, MInt rhs) {
+            MInt res = lhs;
+            res /= rhs;
+            return res;
+        }
+        friend constexpr istream &operator>>(istream &is, MInt &a) {
+            i64 v;
+            is >> v;
+            a = MInt(v);
+            return is;
+        }
+        friend constexpr ostream &operator<<(ostream &os, const MInt &a) {
+            return os << a.val();
+        }
+        friend constexpr bool operator==(MInt lhs, MInt rhs) {
+            return lhs.val() == rhs.val();
+        }
+        friend constexpr bool operator!=(MInt lhs, MInt rhs) {
+            return lhs.val() != rhs.val();
+        }
+    };
+
+    template<>
+    int MInt<0>::Mod = mod;
+
+    template<int V, int P>
+    constexpr MInt<P> CInv = MInt<P>(V).inv();
+
+    constexpr int P = mod;
+    using Z = MInt<P>;
+
+    struct Comb {
+        int N;
+        vector<Z> _fac;
+        vector<Z> _invfac;
+        vector<Z> _inv;
+
+        Comb() : N{0}, _fac{1}, _invfac{1}, _inv{0} {}
+        Comb(int n) : Comb() {
+            init(n);
+        }
+
+        void init(int m) {
+            m = min(m, Z::getMod() - 1);
+            if (m <= N) return;
+            _fac.resize(m + 1);
+            _invfac.resize(m + 1);
+            _inv.resize(m + 1);
+
+            for (int i = N + 1; i <= m; i++) {
+                _fac[i] = _fac[i - 1] * i;
+            }
+            _invfac[m] = _fac[m].inv();
+            for (int i = m; i > N; i--) {
+                _invfac[i - 1] = _invfac[i] * i;
+                _inv[i] = _invfac[i] * _fac[i - 1];
+            }
+            N = m;
+        }
+        void check_init(int m){
+            if (m > N) init(2 * m);
+        }
+        Z fac(int m) {
+            check_init(m);
+            return _fac[m];
+        }
+        Z invfac(int m) {
+            check_init(m);
+            return _invfac[m];
+        }
+        Z inv(int m) {
+            check_init(m);
+            return _inv[m];
+        }
+        Z binom(int n, int k) { // choose k out of n
+            if (n < k || k < 0) return 0;
+            return fac(n) * invfac(k) * invfac(n - k);
+        }
+    } comb;
+}
+using Z = mod_util::MInt<mod>;
 namespace string_util {
     const ll MOD = (1ll<<61) - 1;
     const int sigma = 256; // max size of alphabet
@@ -691,6 +1089,7 @@ namespace string_util {
     vi kmpSearch(auto &text, auto &pat){ // all matches of pattern p in text
         int n = sz(text), m = sz(pat);
         vi matches;
+        if(m > n) return matches;
         if(m == 0) {
             forn(i, n) matches.pb(i);
             return matches;
@@ -872,6 +1271,67 @@ namespace math_util {
             x = (x%m + m) % m; // 0 <= x < m
             return true;
         }
+        void shift_solution(ll & x, ll & y, ll a, ll b, ll cnt) {
+            x += cnt * b;
+            y -= cnt * a;
+        }
+        ll find_smallest_x(ll a, ll b, ll c, ll minx) {
+            ll x, y, g;
+            if (!find_any_solution(a, b, c, x, y, g))
+                return 0;
+            a /= g;
+            b /= g;
+            int sign_b = b > 0 ? +1 : -1;
+
+            shift_solution(x, y, a, b, (minx - x) / b);
+            if (x < minx)
+                shift_solution(x, y, a, b, sign_b);
+            ll lx1 = x;
+            return lx1;
+        }
+        ll find_all_solutions(ll a, ll b, ll c, ll minx, ll maxx, ll miny, ll maxy) {
+            ll x, y, g;
+            if (!find_any_solution(a, b, c, x, y, g))
+                return 0;
+            a /= g;
+            b /= g;
+
+            int sign_a = a > 0 ? +1 : -1;
+            int sign_b = b > 0 ? +1 : -1;
+
+            shift_solution(x, y, a, b, (minx - x) / b);
+            if (x < minx)
+                shift_solution(x, y, a, b, sign_b);
+            if (x > maxx)
+                return 0;
+            ll lx1 = x;
+
+            shift_solution(x, y, a, b, (maxx - x) / b);
+            if (x > maxx)
+                shift_solution(x, y, a, b, -sign_b);
+            ll rx1 = x;
+
+            shift_solution(x, y, a, b, -(miny - y) / a);
+            if (y < miny)
+                shift_solution(x, y, a, b, -sign_a);
+            if (y > maxy)
+                return 0;
+            ll lx2 = x;
+
+            shift_solution(x, y, a, b, -(maxy - y) / a);
+            if (y > maxy)
+                shift_solution(x, y, a, b, sign_a);
+            ll rx2 = x;
+
+            if (lx2 > rx2)
+                swap(lx2, rx2);
+            ll lx = max(lx1, lx2);
+            ll rx = min(rx1, rx2);
+
+            if (lx > rx)
+                return 0;
+            return (rx - lx) / abs(b) + 1;
+        }
     } congruence;
     struct MatrixExp {
         const int A = 1, B = 1;
@@ -900,10 +1360,169 @@ namespace math_util {
         }
     };
 }
+struct Trie{ // Aho Corasick
+    /*
+    https://leetcode.com/problems/stream-of-characters/solutions/1610912/c-aho-corasick-algorithm-o-1-queries/
+    https://cp-algorithms.com/string/aho_corasick.html
+    https://codeforces.com/blog/entry/14854
+    https://dl.acm.org/doi/epdf/10.1145/360825.360855
+    https://codeforces.com/blog/entry/49044
+    https://codeforces.com/problemset/problem/963/D
+    */
+
+    const static int K = 30;
+    int offset = 'a';
+
+    struct Vertex {
+        int next[K], go[K];
+        int leaf = -1, p = -1;
+        char pch;
+        int link = -1, leaflink = -1;
+        Vertex(int _p=-1, char ch='$') : p(_p), pch(ch) {
+            mem(next, -1); mem(go, -1);
+        }
+    };
+
+    vector<Vertex> t;
+
+    Trie(){
+        t = {Vertex()};
+    }
+
+    void add_string(string const& s, int idx) {
+        int v = 0;
+        for (char ch : s) {
+            int c = ch - offset;
+            if (t[v].next[c] == -1) {
+                t[v].next[c] = sz(t);
+                t.emplace_back(v, ch);
+            }
+            v = t[v].next[c];
+        }
+        t[v].leaf = idx;
+    }
+
+
+    // int go(int v, char ch);
+
+    int get_link(int v) {
+        if (t[v].link == -1) {
+            if (v == 0 || t[v].p == 0)
+                t[v].link = 0;
+            else
+                t[v].link = go(get_link(t[v].p), t[v].pch);
+            get_link(t[v].link);
+            t[v].leaflink = (t[t[v].link].leaf != -1) ? t[v].link : t[t[v].link].leaflink;
+        }
+        return t[v].link;
+    }
+
+    int go(int v, char ch) {
+        int c = ch - offset;
+        if (t[v].go[c] == -1) {
+            if (t[v].next[c] != -1)
+                t[v].go[c] = t[v].next[c];
+            else
+                t[v].go[c] = v == 0 ? 0 : go(get_link(v), ch);
+        }
+        return t[v].go[c];
+    }
+
+    int get_first_match(int v){
+        get_link(v);
+        int cur = t[v].leaf == -1 ? t[v].leaflink : v;
+        if(cur == -1) return cur;
+        return t[cur].leaf;
+    }
+
+    vi get_all_strings(int v){
+        get_link(v);
+        vi res;
+        int cur = t[v].leaf == -1 ? t[v].leaflink : v;
+        while (cur != -1) {
+            res.push_back(t[cur].leaf);
+            cur = t[cur].leaflink;
+        }
+        return res;
+    }
+};
+struct aho_corasick {
+    struct out_node {
+        string keyword; out_node *next;
+        out_node(string k, out_node *n) : keyword(k), next(n) { }
+    };
+    struct go_node {
+        map<char, go_node*> next;
+        out_node *out; go_node *fail;
+        go_node() { out = NULL; fail = NULL; }
+    };
+    go_node *go;
+    int N;
+    map<string, vi> label;
+    aho_corasick(vector<string> &keywords) {
+        N = sz(keywords);
+        go = new go_node();
+        forn(i, N){
+            auto &k = keywords[i];
+            label[k].pb(i);
+            go_node *cur = go;
+            for(auto c: k)
+                cur = cur->next.find(c) != cur->next.end() ? cur->next[c] :
+                    (cur->next[c] = new go_node());
+            cur->out = new out_node(k, cur->out);
+        }
+        queue<go_node*> q;
+        // forit(a, go->next) q.push(a->second);
+        for(auto [c, node]: go->next) q.push(node);
+        while (!q.empty()) {
+            go_node *r = q.front(); q.pop();
+            for(auto [c, s]: r->next){
+            // iter(a, r->next) {
+                // go_node *s = a->second;
+                q.push(s);
+                go_node *st = r->fail;
+                while (st && st->next.find(c) == st->next.end())
+                    st = st->fail;
+                if (!st) st = go;
+                s->fail = st->next[c];
+                if (s->fail) {
+                    if (!s->out) s->out = s->fail->out;
+                    else {
+                        out_node* out = s->out;
+                        while (out->next) out = out->next;
+                        out->next = s->fail->out;
+                    }
+                }
+            }
+        }
+    }
+    vvi search(string s){
+        vvi ress(N);
+        go_node *cur = go;
+        forn(i, sz(s)){
+            auto c = s[i];
+            while (cur && cur->next.find(c) == cur->next.end())
+                cur = cur->fail;
+            if (!cur) cur = go;
+            cur = cur->next[c];
+            if (!cur) cur = go;
+            for (out_node *out = cur->out; out; out = out->next){
+                for(int id: label[out->keyword]){
+                    if(sz(ress[id]) and ress[id].back() == i - sz(out->keyword) + 1)
+                        continue;
+                    ress[id].pb(i - sz(out->keyword) + 1);
+
+                }
+            }
+        }
+        return ress;
+    }
+};
 
 
 int main(){
     vi t;
-    segment_util::Seg<int> seg_min(t, 1e9, [&](int x, int y) { return min(x, y);});
+    segment_util::Seg<int> seg_min(t, segment_util::opMin);
+    // segment_util::Seg<int> seg_min(t, 1e9, [&](int x, int y) { return min(x, y);});
     out("start");
 }

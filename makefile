@@ -15,6 +15,7 @@ CCF3 = -O3 -fopenmp -D_GLIBCXX_PARALLEL -frename-registers -fprofile-use -std=c+
 
 #g++ -o P67356.cc P67356.exe-std=c++17
 # https://codeforces.com/blog/entry/15547
+# g++-13 -o pregen.h jngen.h
 
 # File names
 SRC = $(wildcard *.cpp)
@@ -25,10 +26,24 @@ all: $(PROGS)
 
 # Main target
 %.exe: %.cpp
-	$(CC) -o $@ $< $(CC_FULL) -D LOCAL_RUN
+	$(CC) -o $@ $< $(CC_FULL) -Wno-psabi -D LOCAL_RUN
+# Headers for genInput
+# jngen.o: jngen.h
+# 	$(CC) -c -w $< -o $@
+# genInput.exe: jngen.o genInput.cpp
+# genInput.o: genInput.cpp
+# 	$(CC) -c $(CC_FULL) -I. -include jngen.h $< -o $@
+# genInput.exe: genInput.o jngen.o
+# 	$(CC) $^ -o $@
+# genInput.exe: jngen.h genInput.cpp
+# 	$(CC) -c $(CC_FULL) -include jngen.h $< -o $@
+# genInput.exe: jngen.h genInput.cpp
+# 	$(CC) -o $@ $< $(CC_FULL) -Wno-psabi -D LOCAL_RUN
+# g++-13 -x c++-header -c jngen.h
 
 # To remove generated files
 clean:
 	rm -f *.exe
 
 .PHONY: clean all
+# cd /opt/homebrew/Cellar/gcc/13.2.0/include/c++/13/aarch64-apple-darwin23/bits

@@ -1,8 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#define ONLINE_JUDGEx
-#ifndef ONLINE_JUDGE
+#ifdef LOCAL_RUN
     #include "debug_common.h"
     #else
     #define debug(x)
@@ -12,8 +11,8 @@ using namespace std;
     #define debug4(x, y, z, w)
     #define ctime()
     int recur_depth = 0; bool rec_indent = true;
-    template <typename Arg, typename... Args>
-    void trace(Arg&& arg, Args&&... args){}
+    const bool isLocal = false;
+    template <class Arg, class... Args> void trace(Arg&& arg, Args&&... args){}
     #endif
 
     #define pb push_back
@@ -32,13 +31,14 @@ using namespace std;
     #define abs(x) (((x) < 0) ? -(x) : (x))
     #define sqr(x) ((x) * (x))
     #define sqrt(x) sqrt(abs(x))
-    #define has(c,x) (c.find(x)!=c.end())
+    #define has(c,x) (c.find(x) != c.end())
     #define pw(x) (1LL << (x))
-    #define ibit(x,i) ((x >> i) & 1)
+    #define ibit(x,i) (((x) >> (i)) & 1)
     #define preturn(s) {out(s); return;}
-    #define yesno(b) ((b) ? "Yes" : "No")
     #define data(v) v.data(), sz(v) // vi -> vai
-
+    #define lassert(x) assert(x)
+    #define dassert(x, ...) if(!(x)) {\
+        trace("Failed", #x , __VA_ARGS__); out("line", __LINE__, __FILE__); exit(1);}
 
     typedef stringstream sstr;
     typedef long long ll;
@@ -52,40 +52,67 @@ using namespace std;
     typedef vector<vi> vvi;
     typedef vector<vll> vvll;
     typedef valarray<int> vai;
+    template <class T>
+    using min_pq = priority_queue<T, vector<T>, greater<T>>;
+    template <class T>
+    using vc = vector<T>;
+    template <class T>
+    using vvc = vector<vc<T>>;
+    template <class T>
+    using vvvc = vector<vvc<T>>;
+    template <class T>
+    using vvvvc = vector<vvvc<T>>;
+    template <class T>
+    using vvvvvc = vector<vvvvc<T>>;
+
+    template<class F>
+    struct y_comb{
+        F f;
+        template<class T> explicit y_comb(T &&f_in): f(forward<T>(f_in)){ }
+        template<class ...Args> decltype(auto) operator()(Args &&...args){ return f(ref(*this), forward<Args>(args)...); }
+    };
+    template<class F>
+    decltype(auto) yf(F &&f){
+        return y_comb<decay_t<F>>(forward<F>(f));
+    }
 
     inline int ni(){ int x; cin >> x;   return x; }
     inline ll  nl() { ll  x; cin >> x; return x; }
 
-    // variadics
-    template <typename T> void mmin(T& a, const T& b) {
+    template <class T> void mmin(T& a, const T& b) {
         a = (a) < (b) ? (a) : (b);
     }
-    template <typename T> void mmax(T& a, const T& b) {
+    template <class T> void mmax(T& a, const T& b) {
         a = (a) > (b) ? (a) : (b);
     }
-    template <typename Iter> void outIt (Iter it, Iter end) {
-        for (; it!=end; ++it) { cout<< *it <<" "; } cout << endl;
+    template <class T> auto vv(int d1, T x){
+        return vc<T>(d1, x);
     }
-    template <typename Iter> void readIt (Iter it, Iter end) {
-        if(it == end) trace("readIt empty");
-        for (; it!=end; ++it) { cin>> *it; }
+    template <class T> auto vv(int d1, int d2, T x){
+        return vc<vc<T>>(d1, vc<T>(d2, x));
+    }
+    template <class T> auto vv(int d1, int d2, int d3, T x){
+        return vc<vc<vc<T>>>(d1, vv(d2, d3, x));
+    }
+    template <class T> auto vv(int d1, int d2, int d3, int d4, T x){
+        return vc<vc<vc<vc<T>>>>(d1, vv(d2, d3, d4, x));
     }
     void outv(auto &v){
         for(auto &x: v) {cout<< x <<" ";} cout<<endl;
     }
-    void readv(auto &v, int &n){
+    void rvec(int &n, auto &v){
         cin >> n; v.resize(n); for(auto &x: v) cin >> (x);
     }
-    void readv(auto &v){
-        if(sz(v)==0) trace("readv empty");
-        for(auto &x: v) cin >> (x);
+    template<class T> istream& operator>> (istream& in, vector<T>& v) {
+        assert(!v.empty()); for(T &x: v) cin >> x;
+        return in;
     }
-    template <typename Arg, typename... Args>
+    template <class Arg, class... Args>
     void read(Arg&& arg, Args&&... args){
         cin >> std::forward<Arg>(arg); using expander = int[];
         (void)expander{0, (void(cin >> std::forward<Args>(args)),0)...};
     }
-    template <typename Arg, typename... Args>
+    template <class Arg, class... Args>
     void out(Arg&& arg, Args&&... args){
         cout << std::forward<Arg>(arg); using expander = int[];
         (void)expander{0, (void(cout << " " << std::forward<Args>(args)),0)...};
@@ -104,6 +131,8 @@ using namespace std;
         return ans;
     }
 
+    void yes(bool t = 1) { out(t ? "Yes" : "No"); }
+    void no(bool t = 1) { yes(!t); }
     mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
     const long double PI = (long double)(3.1415926535897932384626433832795);
     const ll  mx_ll   = numeric_limits<ll> :: max();
@@ -111,10 +140,9 @@ using namespace std;
     const int oo = 0x3f3f3f3f;
     const ll  OO = 0x3f3f3f3f3f3f3f3fll;
     const double eps = 1e-9;
-    // const int dx[8]={0,1, 0,-1,-1,1,-1, 1};
-    // const int dy[8]={1,0,-1, 0,-1,1, 1,-1};
-    const int dx[4]={0,1, 0,-1};
-    const int dy[4]={1,0,-1, 0};
+    const int DX[8]={0,1, 0,-1,-1,1,-1, 1};
+    const int DY[8]={1,0,-1, 0,-1,1, 1,-1};
+
 
 bool MULTIPLE_TESTS = true;
 const int maxn = 1e5 + 3;
