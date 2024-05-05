@@ -4,15 +4,17 @@ using namespace std;
 #ifdef LOCAL_RUN
     #include "debug_common.h"
     #else
-    #define debug(x)
-    #define debuga(a, n)
-    #define debug2(x, y)
-    #define debug3(x, y, z)
-    #define debug4(x, y, z, w)
-    #define ctime()
+    #define trace(...) ;
+    #define debug(x) ;
+    #define debuga(a, n) ;
+    #define debug2(x, y) ;
+    #define debug3(x, y, z) ;
+    #define debug4(x, y, z, w) ;
+    #define ctime() ;
+    #define lassert(x) ;
+    #define dassert(x, ...) ;
     int recur_depth = 0; bool rec_indent = true;
     const bool isLocal = false;
-    template <class Arg, class... Args> void trace(Arg&& arg, Args&&... args){}
     #endif
 
     #define pb push_back
@@ -34,11 +36,8 @@ using namespace std;
     #define has(c,x) (c.find(x) != c.end())
     #define pw(x) (1LL << (x))
     #define ibit(x,i) (((x) >> (i)) & 1)
-    #define preturn(s) {out(s); return;}
+    #define preturn(...) {out(__VA_ARGS__); return;}
     #define data(v) v.data(), sz(v) // vi -> vai
-    #define lassert(x) assert(x)
-    #define dassert(x, ...) if(!(x)) {\
-        trace("Failed", #x , __VA_ARGS__); out("line", __LINE__, __FILE__); exit(1);}
 
     typedef stringstream sstr;
     typedef long long ll;
@@ -131,8 +130,10 @@ using namespace std;
         return ans;
     }
 
-    void yes(bool t = 1) { out(t ? "Yes" : "No"); }
-    void no(bool t = 1) { yes(!t); }
+    string yes(bool t = 1) { return t ? "Yes" : "No"; }
+    string no(bool t = 1) { return yes(!t); }
+    void pyes(bool t = 1) { out(yes(t)); }
+    void pno(bool t = 1) { out(no(t)); }
     mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
     const long double PI = (long double)(3.1415926535897932384626433832795);
     const ll  mx_ll   = numeric_limits<ll> :: max();

@@ -15,6 +15,9 @@ const bool isLocal = true;
 #define debug4(x, y, z, w) {cerr_st(); cerr<<#x<<" = " <<x<<", "<<#y <<" = " <<y <<", "<<#z<<" = "<<z<<", "<<#w << " = " <<w; cerr_end();}
 #define gtime() ((1.0*clock() - 0)/CLOCKS_PER_SEC)
 #define ctime() {cerr_st(); cerr<< gtime() << " secs" ; cerr_end();}
+#define lassert(x) assert(x)
+#define dassert(x, ...) if(!(x)) {\
+        trace("Failed", #x , __VA_ARGS__); out("line", __LINE__, __FILE__); exit(1);}
 
 
 template<class ...Ts> ostream& operator<<(ostream& os, const tuple<Ts...> & tuple);
@@ -33,7 +36,10 @@ template<class T> ostream& operator<<(ostream &os, const queue<T> &q);
 template<class T> ostream& operator<<(ostream &os, const deque<T> &q);
 template<class T> ostream& operator<<(ostream &os, const priority_queue<T> &q);
 template<class T> ostream& operator<<(ostream &os, const priority_queue<T,vector<T>,greater<T>> &q);
+typedef list<array<int, 3>> clist;
+typedef clist::iterator lit;
 
+ostream& operator<<(ostream &os, const lit t);
 
 namespace tuple_utils{
   template<class ...Ts, size_t ...Is>
