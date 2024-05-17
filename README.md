@@ -10,7 +10,9 @@ Contains interesting templates, debugging functions, colors. May or may not be i
 Contains leetcode relevant template
 
 ## New contest
-`python compete -c 748`          (creates dir 748 and its a.cc b.cc files)
+creates dir 748 and its a.cc b.cc files:
+```python compete.py -c 748```          
 
-`python compete -c 748 -i 0`     (same but without a.in, b.in input files)
+same as above but without a.in, b.in input files
+```python compete.py -c 748 -i 0```     
 
